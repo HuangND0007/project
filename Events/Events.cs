@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Events : MonoBehaviour
 {
-    public ItemSO[] Goods;
+    public ItemSO Good;
+    public float value;
     public void Work(float timeIni)
     {
         if (Environment.Instance.returnLight() < 1.0f)
@@ -17,10 +19,15 @@ public class Events : MonoBehaviour
         }
     }
 
-    public void test()
+    public void Purchase()
     {
-        BackpackManager.Instance.UpdateItems(Goods[1], 10); 
-        BackpackManager.Instance.UpdateItems(Goods[0], 10);
+        if (PlayerManager.Instance.GetMoney() < value)
+        {
+            //其他的提示语句可以在UI上显示,这里直接返回
+            return;//如果金钱不足,则返回,表示操作失败
+        }
+        PlayerManager.Instance.ModifyMoney(-value);//扣除金钱
+        BackpackManager.Instance.UpdateItems(Good, 1);//增加物品数量  
     }
 
     private void Start()
