@@ -17,6 +17,7 @@ public class DialogueData : ScriptableObject
         [TextArea(3, 5)]
         public string content;
         public bool hasOptions;        // 是否显示"查看选项"按钮
+        public bool shop;          // 如果hasOptions为true，显示选项按钮；如果shop为true，显示商店按钮
         public DialogueOption[] options;
     }
 

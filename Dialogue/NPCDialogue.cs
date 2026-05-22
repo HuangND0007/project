@@ -4,12 +4,15 @@ using TMPro;
 
 public class NPCDialogue : MonoBehaviour
 {
+    public static NPCDialogue Instance { get; private set; }
     [Header("主对话UI")]
     [SerializeField] private DialogueData dialogueData;
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text contentText;
     [SerializeField] private Button openOptionsButton;  // "查看选项"按钮
+    [SerializeField] private Button openShopButton;  // "查看商店"按钮
+
 
     [Header("选项弹窗")]
     [SerializeField] private GameObject optionsWindow;
@@ -18,13 +21,36 @@ public class NPCDialogue : MonoBehaviour
     [SerializeField] private Button closeOptionsButton;
     [SerializeField] private TMP_Text resultText;  // 弹窗内显示选择结果
 
+    [Header("商店弹窗")]
+    [SerializeField] private CanvasGroup shopWindow;
+
+
     private int currentLine = 0;
     private bool isPlayerInRange = false;
     private bool isDialogueActive = false;
 
+    public bool IfDialogueActive()
+    {
+        return isDialogueActive;
+    }    
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
     void Start()
     {
-        openOptionsButton.onClick.AddListener(OpenOptionsWindow);
+        openOptionsButton.onClick.AddListener(() =>
+        {
+            OpenOptionsWindow();
+            Debug.Log("打开选项界面");
+
+        });
+        openShopButton.onClick.AddListener(() => 
+        {
+            OpenShopWindow();
+            Debug.Log("打开商店界面");
+        });
         closeOptionsButton.onClick.AddListener(CloseOptionsWindow);
     }
 
@@ -59,19 +85,20 @@ public class NPCDialogue : MonoBehaviour
 
         // 控制"查看选项"按钮显示
         openOptionsButton.gameObject.SetActive(line.hasOptions);
+        openShopButton.gameObject.SetActive(line.shop);
     }
 
     // ========== 选项弹窗逻辑 ==========
 
     void OpenOptionsWindow()
     {
-        if(openOptionsButton != null) openOptionsButton.gameObject.SetActive(false);  // 隐藏主界面按钮
+        if (openOptionsButton != null) openOptionsButton.gameObject.SetActive(false);  // 隐藏主界面按钮
         var currentOptions = dialogueData.lines[currentLine].options;
         if (currentOptions == null || currentOptions.Length == 0) return;
 
         // 清空旧选项
         foreach (Transform child in optionsContainer)
-            if (child != null)Destroy(child.gameObject);
+            if (child != null) Destroy(child.gameObject);
 
         resultText.text = "";  // 清空上次结果
 
@@ -84,10 +111,30 @@ public class NPCDialogue : MonoBehaviour
 
             // 关键：点击后直接显示结果，不跳转对话
             var opt = option;  // 闭包捕获
-            btn.GetComponent < Button > ().onClick.AddListener(() => OnOptionSelected(opt));
+            btn.GetComponent<Button>().onClick.AddListener(() => OnOptionSelected(opt));
         }
 
         optionsWindow.SetActive(true);
+    }
+
+    // ========== 商店弹窗逻辑 ==========
+    void OpenShopWindow()
+    {
+        if (openShopButton != null) openShopButton.gameObject.SetActive(false);  // 隐藏商店按钮
+        //var currentOptions = dialogueData.lines[currentLine].options;
+        //if (currentOptions == null || currentOptions.Length == 0) return;
+
+        // 清空旧选项
+        foreach (Transform child in optionsContainer)
+            if (child != null) Destroy(child.gameObject);
+
+        resultText.text = "";  // 清空上次结果
+
+        closeDialogue(false);
+        // 生成商店界面
+
+        BackPackUI.Instance.BackPackOpenandClose();
+        shopWindow.alpha = 1;
     }
 
     void OnOptionSelected(DialogueData.DialogueOption option)
@@ -113,11 +160,28 @@ public class NPCDialogue : MonoBehaviour
 
     public void EndDialogue()
     {
-        isDialogueActive = false;
-        dialoguePanel.SetActive(false);
+        closeDialogue(true);
         CloseOptionsWindow();  // 确保弹窗也关闭
     }
 
+    void closeDialogue(bool active)
+    {
+        if(active)isDialogueActive = false; //只有在正常结束对话时才设置为false，强制关闭对话界面不改变状态
+
+        if (dialogueData != null)           //防御性检查
+        {
+            dialoguePanel.SetActive(false); // 隐藏对话界面
+        }
+        if (BackPackUI.Instance.IsOpen())//如果背包界面打开了，关闭按钮一并关闭背包界面
+        {
+            BackPackUI.Instance.BackPackOpenandClose();
+        }
+        if (shopWindow != null) shopWindow.alpha = 0;  // 隐藏商店界面
+    }
+    void OnEnable()
+    {
+        EndDialogue();  // 确保每次启用时对话结束
+    }
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player")) isPlayerInRange = true;
