@@ -14,7 +14,7 @@ public class Loot : MonoBehaviour
     {
         if (itemSO == null) 
         {
-            Debug.Log("物品SO丢失了");
+            Debug.Log("物品SO丢失了");   
             return;
 
         }

@@ -58,23 +58,11 @@ public class BackpackManager : MonoBehaviour
                 if ( amount < 0 && Mathf.Abs(amount) > slot.amount ) return -1;//如果要减少的数量大于当前物品数量,则返回-1,表示操作失败 
                 slot.amount += amount;
                 slot.UpdateUI();
+                MoneyAmounts();
                 return 0;
             }
         }
 
-        //旧逻辑注释掉
-        //foreach (var slot in itemSlots) //如果没有相同的物品,就放在第一个空位上
-        //{
-        //    if (slot.itemSO == null)
-        //    {
-        //        slot.itemSO = itemSO;
-        //        slot.amount = amount;
-        //        slot.UpdateUI();
-        //        return 0;
-        //    }
-        //}
-
-        //itemSlots.Add(new BackpackSlots { itemSO = itemSO, amount = amount });//如果没有相同的物品,就新建一个背包槽位,并添加到背包槽位列表中
         BackpackSlots newSlot = Instantiate(backpackSlotPrefab); 
         newSlot.transform.SetParent(slot_.transform, false);
         newSlot.itemSO = itemSO;
