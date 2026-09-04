@@ -12,6 +12,7 @@ public class NPCDialogue : MonoBehaviour
     [SerializeField] private TMP_Text contentText;
     [SerializeField] private Button openOptionsButton;  // "查看选项"按钮
     [SerializeField] private Button openShopButton;  // "查看商店"按钮
+    [SerializeField] private Button Guild;  //向导的按钮
 
 
     [Header("选项弹窗")]
@@ -19,6 +20,7 @@ public class NPCDialogue : MonoBehaviour
     [SerializeField] private Transform optionsContainer;
     [SerializeField] private GameObject optionButtonPrefab;
     [SerializeField] private Button closeOptionsButton;
+    [SerializeField] private TMP_Text Titletext;
     [SerializeField] private TMP_Text resultText;  // 弹窗内显示选择结果
 
     [Header("商店弹窗")]
@@ -36,7 +38,6 @@ public class NPCDialogue : MonoBehaviour
     void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(gameObject);
     }
     void Start()
     {
@@ -51,6 +52,12 @@ public class NPCDialogue : MonoBehaviour
             OpenShopWindow();
             Debug.Log("打开商店界面");
         });
+        Guild.onClick.AddListener(() =>
+        {
+            GameObject btn = Instantiate(optionButtonPrefab, optionsContainer);
+            closeDialogue(true);
+            Debug.Log("向导初始化内容");
+        });
         closeOptionsButton.onClick.AddListener(CloseOptionsWindow);
     }
 
@@ -58,11 +65,16 @@ public class NPCDialogue : MonoBehaviour
     {
         if (isPlayerInRange && Input.GetKeyDown(KeyCode.F))
         {
+            Debug.Log("按下F键，触发对话逻辑");
             if (!isDialogueActive) StartDialogue();
             else NextLine();
         }
     }
 
+    public void ForceStartDialogue()
+    {
+        if (!isDialogueActive) StartDialogue();
+    }
     void StartDialogue()
     {
         isDialogueActive = true;
@@ -86,13 +98,17 @@ public class NPCDialogue : MonoBehaviour
         // 控制"查看选项"按钮显示
         openOptionsButton.gameObject.SetActive(line.hasOptions);
         openShopButton.gameObject.SetActive(line.shop);
+        Guild.gameObject.SetActive(line.Guild);
     }
 
     // ========== 选项弹窗逻辑 ==========
 
     void OpenOptionsWindow()
-    {
-        if (openOptionsButton != null) openOptionsButton.gameObject.SetActive(false);  // 隐藏主界面按钮
+    {   
+        Titletext.text = dialogueData.speakerName;
+
+        if (openOptionsButton != null) dialoguePanel.SetActive(false);  // 隐藏主界面
+        isDialogueActive = false; // 进入选项界面时不再视为对话进行中，防止误触发下一行对话
         var currentOptions = dialogueData.lines[currentLine].options;
         if (currentOptions == null || currentOptions.Length == 0) return;
 
@@ -109,7 +125,7 @@ public class NPCDialogue : MonoBehaviour
             if (option.optionText != null)
                 btn.GetComponentInChildren<TMP_Text>().text = option.optionText;
 
-            // 关键：点击后直接显示结果，不跳转对话
+            // 点击后直接显示结果，不跳转对话
             var opt = option;  // 闭包捕获
             btn.GetComponent<Button>().onClick.AddListener(() => OnOptionSelected(opt));
         }
@@ -135,6 +151,8 @@ public class NPCDialogue : MonoBehaviour
 
         BackPackUI.Instance.BackPackOpenandClose();
         shopWindow.alpha = 1;
+        shopWindow.interactable = true;
+        shopWindow.blocksRaycasts = true;
     }
 
     void OnOptionSelected(DialogueData.DialogueOption option)
@@ -168,7 +186,7 @@ public class NPCDialogue : MonoBehaviour
     {
         if(active)isDialogueActive = false; //只有在正常结束对话时才设置为false，强制关闭对话界面不改变状态
 
-        if (dialogueData != null)           //防御性检查
+        if (dialogueData != null && dialoguePanel != null)           //防御性检查
         {
             dialoguePanel.SetActive(false); // 隐藏对话界面
         }
@@ -176,7 +194,10 @@ public class NPCDialogue : MonoBehaviour
         {
             BackPackUI.Instance.BackPackOpenandClose();
         }
-        if (shopWindow != null) shopWindow.alpha = 0;  // 隐藏商店界面
+        if (shopWindow != null) {shopWindow.alpha = 0;  // 隐藏商店界面
+            shopWindow.interactable = false;
+            shopWindow.blocksRaycasts = false;
+        }
     }
     void OnEnable()
     {

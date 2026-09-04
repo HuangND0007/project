@@ -9,6 +9,7 @@ public class DialogueData : ScriptableObject
     {
         public string optionText;
         public string resultText;      // 选择后的反馈文字
+        public bool opensShop;         // 选择后是否打开商店界面
     }
 
     [System.Serializable]
@@ -18,6 +19,7 @@ public class DialogueData : ScriptableObject
         public string content;
         public bool hasOptions;        // 是否显示"查看选项"按钮
         public bool shop;          // 如果hasOptions为true，显示选项按钮；如果shop为true，显示商店按钮
+        public bool Guild;
         public DialogueOption[] options;
     }
 

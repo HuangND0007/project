@@ -41,6 +41,16 @@ public class DataManager : MonoBehaviour
             sw.Write(json_backpack);
         }
     }
+    private void EventsDataSaving()
+    {
+        var eventsdata = DataEvents.Instance.DataSaving();
+        string json_events = JsonMapper.ToJson(eventsdata);
+        string path_events = Application.streamingAssetsPath + "/eventsdata.json";
+        using (StreamWriter sw = new StreamWriter(path_events))
+        {
+            sw.Write(json_events);
+        }
+    }
 
 
      private void DataSaving()
@@ -48,13 +58,14 @@ public class DataManager : MonoBehaviour
         PlayerSaving();
         EnvironmentSaving();
         BackpackSaving();
+        EventsDataSaving();
     }
     private void DataLoading()
     { 
         PlayerLoading();
         EnveromentLoading();
         BackpackLoading();
-
+        EventsDataLoading();
     }
     private void PlayerLoading()
     {
@@ -118,6 +129,27 @@ public class DataManager : MonoBehaviour
         {
             BackpackManager.Instance.DataIni();
             Debug.Log("背包数据初始化完成");
+        }
+    }
+    private void EventsDataLoading()
+    {
+        string json;
+        string path_events = Application.streamingAssetsPath + "/eventsdata.json";
+        if(File.Exists(path_events))
+        {
+        using (StreamReader sr = new StreamReader(path_events))
+        {
+            json = sr.ReadToEnd();
+            sr.Close();
+        }
+        var eventsdata = JsonMapper.ToObject<eventsdata>(json);
+        DataEvents.Instance.DataLoading(eventsdata);
+        Debug.Log("事件数据加载成功"); 
+        }
+        else
+        {
+            DataEvents.Instance.DataIni();
+            Debug.Log("事件数据初始化完成");
         }
     }
 
