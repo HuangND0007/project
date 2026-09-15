@@ -11,7 +11,7 @@ public class PlayerData
 
     [Header("玩家数据信息")]
     [Tooltip("玩家名字")]
-    public string Name = "初始名称";
+    public string Name;
     [Tooltip("速度")]
     public float Speed;
     [Tooltip("余额")]
@@ -99,7 +99,14 @@ public class PlayerManager : MonoBehaviour
     {
         return Money;
     }
-
+    public string GetName()
+    {
+        return Name;
+    }
+    public void SetName(string name)
+    {
+        Name = name;
+    }
 
 
     public void DataIni()//初始数据

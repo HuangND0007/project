@@ -110,6 +110,10 @@ public class SceneLoader : MonoBehaviour
         {
             player.SetPositionAndRotation(spawnPos.Value.position, spawnPos.Value.rotation);
             Debug.Log($"[SceneLoader] 玩家传送到: {spawnPointName}");
+
+            StartCoroutine(Wait());
+
+            
         }
         else
         {
@@ -118,6 +122,18 @@ public class SceneLoader : MonoBehaviour
 
         //pendingSpawnPoint = null;
         PlayerController_Trans.Instance?.FinishTeleport();
+    }
+
+    private IEnumerator Wait()
+    {
+        yield return new WaitForSecondsRealtime(3f);
+        var pro = GameObject.Find("process");
+        if (pro != null)
+        {
+            Debug.Log("[SceneLoader] 关闭 process");
+            pro.SetActive(false);
+        }
+        Debug.Log("[SceneLoader] 等待结束，传送完成");
     }
 
     private Transform FindPlayer()

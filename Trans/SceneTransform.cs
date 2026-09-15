@@ -6,7 +6,10 @@ using UnityEngine.SceneManagement;
 
 public class SceneTransform : MonoBehaviour
 {
-
+    public AudioClip Main;
+    public AudioClip Town;
+    public AudioClip Home;
+    public AudioClip Ushiroyama;
     private void UpdateUI()=>TimeUImanage.Instance.UpdateUI();   
     private void Trans(string levelName, string spawnPoint)
     {
@@ -38,7 +41,7 @@ public class SceneTransform : MonoBehaviour
 
 
 
-    public void Town_Ushiroyama()=>TransSet("Ushiroyama", 50,"SpawnPoint_Town");
+    public void Home_Ushiroyama()=>TransSet("Ushiroyama", 50,"SpawnPoint_Home");
     
     public void Ushiroyama_Town() => TransSet("Town", 1f , "SpawnPoint_Ushiroyama");
     
