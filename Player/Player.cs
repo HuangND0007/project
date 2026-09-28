@@ -8,8 +8,18 @@ public class Player : MonoBehaviour
 {
     public static Player Instance { set; get; }
     public Rigidbody2D rb;
+    private bool Move = true;
 
     private Vector3 pendingPosition;
+
+    public void SetMoveTrue()
+    {
+        Move = true;
+    }
+    public void SetMoveFalse()
+    {
+        Move = false;
+    }
 
     void Awake()
     {
@@ -25,12 +35,12 @@ public class Player : MonoBehaviour
     private void Update()
     {
         // Update 里只处理非移动逻辑（如场景判断等）
-        if ("MainScene".Equals(UnitySceneManager.GetActiveScene().name)) return;
+        if ("MainScene".Equals(UnitySceneManager.GetActiveScene().name) || !Move ) return;
     }
 
     void FixedUpdate()
     {
-        if ("MainScene".Equals(UnitySceneManager.GetActiveScene().name)) return;
+        if ("MainScene".Equals(UnitySceneManager.GetActiveScene().name)|| !Move ) return;
 
         // 读取输入
         float movex = Input.GetAxis("Horizontal");

@@ -31,10 +31,10 @@ public class Environment : MonoBehaviour
 
     public static Environment Instance { get; private set; }
 
-    private  static int[] Season = {-1, 0, 1, 0};//冬,春,夏,秋
-    private static string[] SeasonName = { "冬", "春", "夏", "秋" };
+    private  static int[] Season = { 0, 1, 0 , -1};//春,夏,秋,冬
+    private static string[] SeasonName = {  "春", "夏", "秋" ,"冬"};
     public int currentSeaon;
-    private int seasoNum = 0;
+    private int seasoNum = 3;
     private int Year;
     public int Day;
     public float Time ;
@@ -43,28 +43,50 @@ public class Environment : MonoBehaviour
     private float _light;
     private static float  starLight = 1f;
 
+
+    public void YearSet()
+    {
+        Year++;
+        Day = 1;
+        Time = 8.00f;
+        hour = 8;
+        seasoNum = 0;
+    }
+   public void SkipSeason()
+    {
+        Day = 1;
+        Time = 8.00f;
+        hour = 8;
+        minute = 0;
+        seasoNum++;
+        if (seasoNum > 3) Year++;
+        seasoNum %= 4;
+    }
+
     //季节轮替
     public void seasonTransform()
     {
-        seasoNum++;seasoNum %= 4;
+        seasoNum++;
+        if (seasoNum > 3) YearSet();
+        seasoNum %= 4;
         currentSeaon = Season.ElementAt(seasoNum);
     }
 
     //传递分钟的时间变化
-    public void setTime (int min)
+    public void SetTime (int min)
     {
         SeparateTime();
         minute += (float)min;
-        timeTranslate(); MerageTime();
+        TimeTranslate(); MerageTime();
         prinEn();
     }
     //传递小时的时间变化
-    public void setTime(float h)
+    public void SetTime(float h)
     {
         SeparateTime();
         hour += (int)(h - h % 1);
         minute += 60 * (h % 1);
-        timeTranslate(); MerageTime();
+        TimeTranslate(); MerageTime();
         prinEn();
     }
     //更新浮点时间变量的方法
@@ -80,7 +102,7 @@ public class Environment : MonoBehaviour
 
 
     //分钟与小时的时间进制更新
-    private void timeTranslate()
+    private void TimeTranslate()
     {
         if (minute >= 60)
         {
@@ -91,6 +113,13 @@ public class Environment : MonoBehaviour
         {
             hour %= 24;
             Day++;
+            if(Day > 15)
+            {
+                Day = 1;
+                seasonTransform();
+                if (currentSeaon == -1)
+                    Year++;
+            }
         }
     }
 
@@ -106,8 +135,18 @@ public class Environment : MonoBehaviour
     {
         return Mathf.Round(  Mathf.PI * (Time - 6 + currentSeaon) / (12 + currentSeaon) *100f / 100f);
     }
+
+
+
+
+
+
+    /// <summary>
+    /// get方法
+    /// </summary>
+    /// <returns></returns>
     //光照的接口
-    public float returnLight()
+    public float getLight()
     {
         setLight();//测试用
         return _light;
@@ -119,7 +158,7 @@ public class Environment : MonoBehaviour
     }
     public string getSeason()//返回季节
     {
-        return SeasonName[currentSeaon];
+        return SeasonName[seasoNum];
     }
     public int getDay()//返回日期
     {
@@ -137,9 +176,17 @@ public class Environment : MonoBehaviour
         print( (Time - Time %1) + ":" + m + ";time:" + Time);
         else
         print((Time - Time % 1) + ":0" + m + ";time:" + Time);
-        print("light:" + returnLight());
+        print("light:" + getLight());
     }
 
+
+
+
+
+
+    /// <summary>
+    /// 数据层的保存初始化方法，调用DataLoading()方法将数据初始化为默认值
+    /// </summary>
     public void DataIni()
     {
         DataLoading(new EnvironmentData());

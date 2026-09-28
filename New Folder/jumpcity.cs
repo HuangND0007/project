@@ -7,7 +7,7 @@ public class jumpcity : MonoBehaviour
 {
     public void OnLogButterClick()
     {
-        SceneManager.LoadScene("city");
+        SceneManager.LoadScene("town");
     }
     
 }

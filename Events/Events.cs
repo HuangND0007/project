@@ -9,13 +9,13 @@ public class Events : MonoBehaviour
     public float value;
     public void Work(float timeIni)
     {
-        if (Environment.Instance.returnLight() < 1.0f)
+        if (Environment.Instance.getLight() < 1.0f)
         { return; }
         else
         {
             float time;
             time = timeIni / PlayerManager.Instance.GetEffience();
-            Environment.Instance.setTime(time);
+            Environment.Instance.SetTime(time);
         }
     }
 

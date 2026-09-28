@@ -107,6 +107,26 @@ public class PlayerManager : MonoBehaviour
     {
         Name = name;
     }
+    public void ModifyVitality(float vitality)
+    {
+        Vitality += vitality;
+        if (Vitality > 100) Vitality = 100;
+        if (Vitality < 0) Vitality = 0;
+    }
+    public float GetVitality()
+    {
+        return Vitality;
+    }
+    public void ModifyMood(float mood)
+    {
+        Mood += mood;
+        if (Mood > 100) Mood = 100;
+        if (Mood < 0) Mood = 0;
+    }
+    public float GetMood()
+    {
+        return Mood;
+    }
 
 
     public void DataIni()//³õÊ¼Êý¾Ý

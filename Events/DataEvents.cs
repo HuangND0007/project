@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -15,11 +13,12 @@ public struct eventsdata
     public bool isdestory_foretry ;//林地是否被破坏
     public int destory_count ;//林地以外被破坏的数量
 
+    public bool IsWent;
 
 
-    public static eventsdata Default => new eventsdata (0, 0, 0, 0, 0 ,false, 0);
+    public static eventsdata Default => new eventsdata (0, 0, 0, 0, 0 ,false, 0, false);
 
-    public eventsdata(int rural, int foretry, int herd , int fish, int count, bool isdestory_foretry, int destory_count)
+    public eventsdata(int rural, int foretry, int herd , int fish, int count, bool isdestory_foretry, int destory_count , bool isWent)
     {
         Rural = rural;
         Foretry = foretry;
@@ -28,6 +27,7 @@ public struct eventsdata
         this.isdestory_foretry = isdestory_foretry;
         this.destory_count = destory_count;
         this.Count = count;
+        IsWent = isWent;
     }
 
 }
@@ -41,6 +41,11 @@ public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
     private bool isdestory_foretry = false;//林地是否被破坏
     private int destory_count = 0;//林地以外被破坏的数量
 
+
+    public bool isIsWent()
+    {
+        return data.IsWent;
+    }
     /// 合作商的接受与拒绝的记录,用于后续剧情的触发
     public void Receive(string type)
     {
@@ -102,20 +107,6 @@ public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
     {
         destory_count++;
     }
-
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     private void Awake()
     {
         if (Instance == null)
@@ -138,7 +129,7 @@ public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
     }
     public eventsdata DataSaving()
     {
-        return new eventsdata(data.Rural, data.Foretry, data.Herd, data.Fish, data.Count, isdestory_foretry, destory_count);
+        return new eventsdata(data.Rural, data.Foretry, data.Herd, data.Fish, data.Count, isdestory_foretry, destory_count , data.IsWent);
     }
     public void DataLoading(eventsdata d)
     {
