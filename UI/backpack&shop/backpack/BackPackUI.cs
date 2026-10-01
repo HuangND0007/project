@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
@@ -20,13 +18,15 @@ public class BackPackUI : MonoBehaviour
                 BackPackCanva.interactable = false;
                 BackPackCanva.blocksRaycasts = false;
                 isOpen = false;
-            }
+                Player.Instance.SetMoveTrue();
+        }
             else
             {
                 BackPackCanva.alpha = 1;
                 BackPackCanva.interactable = true;
                 BackPackCanva.blocksRaycasts = true;
                 isOpen = true;
+                Player.Instance.SetMoveFalse();
             }
 
     }

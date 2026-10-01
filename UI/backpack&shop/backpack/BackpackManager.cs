@@ -35,6 +35,7 @@ public class BackpackManager : MonoBehaviour
     //public BackpackSlots[] itemSlots;//旧逻辑使用固定数组,现已修改
     public List<BackpackSlots> itemSlots;//背包槽位列表,用于动态生成背包槽位
     public GameObject MoneyAmount;//显示金钱数量的UI文本对象
+    public TMP_Text Name;
 
     public BackpackSlots backpackSlotPrefab;//背包槽位预制体,用于动态生成背包槽位
     public GameObject slot_;//背包槽位的父物体,用于动态生成背包槽位
@@ -87,6 +88,14 @@ public class BackpackManager : MonoBehaviour
     {
         MoneyAmounts();
     }
+    public void NameUpdate()
+    {
+        UpdateName();
+    }
+    private void UpdateName()
+    {
+            Name.GetComponent<TMP_Text>().text = PlayerManager.Instance.GetName();
+    }
 
     void Start()
     {
@@ -134,6 +143,7 @@ public class BackpackManager : MonoBehaviour
        
         Numbers  = data.numbers;
         ID       = data.itemID;
+        Name.GetComponent<TMP_Text>().text = PlayerManager.Instance.GetName();
         if (count <= 0) return;//如果没有物品数据,就直接返回
         for (int i = 0; i < count; i++)
        {

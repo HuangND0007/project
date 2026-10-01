@@ -156,6 +156,10 @@ public class Environment : MonoBehaviour
     {
         return Year;
     }
+    public int getSeasonNum()//返回季节编号
+    {
+        return seasoNum;
+    }
     public string getSeason()//返回季节
     {
         return SeasonName[seasoNum];
