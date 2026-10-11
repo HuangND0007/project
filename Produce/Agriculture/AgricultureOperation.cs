@@ -38,7 +38,7 @@ public class AgricultureOperation : InitialOperation
         if (PlayerInRange && Input.GetKeyDown(OperationKey))
         {
             NoMove();
-            if (Agriculture.Instance.GetterArea() == 0) { 
+            if (AgricultureProduce.Instance.GetterArea() == 0) { 
                 IniCan.SetActive(true);
             }
             else if (OperationUI != null)
@@ -62,6 +62,7 @@ public class AgricultureOperation : InitialOperation
             { 
                 HideOperateUI(); 
             }
+        ToMove();
     }
 
 
@@ -70,7 +71,7 @@ public class AgricultureOperation : InitialOperation
     private void MonupulateUISetActive()
     {
         OperationUI.SetActive(true);
-        Agriculture.Instance.SetIni();
+        AgricultureProduce.Instance.SetIni();
     }
 
     

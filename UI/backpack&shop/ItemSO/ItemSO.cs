@@ -9,6 +9,7 @@ public class ItemSO : ScriptableObject
     public string itemName;
     [TextArea]public string description;
     public Sprite Icon;
+    public int sellPrice;
 
     [Header("пео╒")]
     public float Weight;

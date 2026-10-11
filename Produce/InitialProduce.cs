@@ -1,7 +1,10 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class InitialProduce : MonoBehaviour//各个产业的父类脚本
+public class HideInDerivedAttribute : PropertyAttribute { }
+
+public class InitialProduce : MonoBehaviour//各个产业的父类脚本
 {
 
     private float Input;//产业的投入值,各个子类会有一个新的对应值,不被继承
@@ -15,16 +18,27 @@ public abstract class InitialProduce : MonoBehaviour//各个产业的父类脚本
 
     public ItemSO ProductiveItem;//产出的物品,各个子类会自己赋值
 
-
+    [HideInDerived]
     public Button Button1;
+    [HideInDerived]
     public GameObject ButtonText1;
+    [HideInDerived]
     public Button Button2;
+    [HideInDerived]
     public GameObject ButtonText2;
+    [HideInDerived]
     public Button Button3;
+    [HideInDerived]
     public GameObject ButtonText3;
+    [HideInDerived]
     public GameObject OperateText;
+    [HideInDerived]
+    public GameObject TipsUI;
+    [HideInDerived]
     public GameObject Unripe;//未成熟时弹出提示
+    [HideInDerived]
     public GameObject Dim;//提示亮度不够,无法工作
+
 
     public void DestoryChange()//用于更新破坏度,传入营养度,计算破坏度变化
     {
@@ -44,14 +58,45 @@ public abstract class InitialProduce : MonoBehaviour//各个产业的父类脚本
         }
     }
 
-    abstract public void SetIni();//设置初始UI,各个产业的UI不同,各子类会重写
-    abstract public void Assart();//广义开垦,各个产业的开垦方式不同,各子类会重写
-    abstract public void Seeding();//广义播种,各个产业的播种方式(即投入方式)不同,各子类会重写
-    abstract public void Fertilizing();//广义施肥,各个产业的施肥方式不同,各子类会重写
-    abstract public void Reap();//广义收获,各个产业的收获方式不同,各子类会重写
-    abstract public void Clearing();//季节性结算
+    public bool WorkJudge()
+    {
+        if (GL() <= 1.0f)
+        {
+            print("光照不足，无法工作");
+            if (TipsUI != null && Dim != null)
+            {
+                TipsUI.SetActive(true);
+                Dim.SetActive(true);
+                print("Dim is not null");
+                ToMove();
+            }
+            StartCoroutine(Wait(Dim));
+            return false;
+        }
+        return true;
+    }
+    public void UnripeTips()
+    {
+        print("产品还未成熟,无法收获");
+        if (TipsUI != null && Unripe != null)
+        {
+            TipsUI.SetActive(true);
+            Unripe.SetActive(true);
+            StartCoroutine(Wait(Unripe));
+        }
+    }
 
+    private IEnumerator Wait(GameObject obj)
+    {
 
+        yield return new WaitForSeconds(2f);
+        if (obj != null && TipsUI != null)
+        {
+            obj.SetActive(false);
+            TipsUI.SetActive(false);
+        }
+        HideOperationUI();
+    }
 
 
 
@@ -61,23 +106,17 @@ public abstract class InitialProduce : MonoBehaviour//各个产业的父类脚本
     protected void SetTime(float time) => Environment.Instance.SetTime(time);
     protected void NoMove() => Player.Instance.SetMoveFalse();
     protected void ToMove() => Player.Instance.SetMoveTrue();
-    protected void Gain(ItemSO Item, int num) {
-        BackpackManager.Instance.UpdateItems( Item, num );
-    }
-    protected bool WorkJudge() 
-    {  
-        if ( GL() < 1.0f )
-        {
-            Dim.SetActive(true);
-            return false;
-        }
-        return true;
+    protected void BackpackItemTranslate(ItemSO Item , int num) {
+        backpack.UpdateItems( Item , num );
     }
 
-    protected static PlayerManager playerData;
+
+    protected static PlayerManager playerData = PlayerManager.Instance;
+    protected static BackpackManager backpack = BackpackManager.Instance;
+    protected static Environment env = Environment.Instance;
     protected static bool IsWinter()
     { //判断是否是冬天,一般作物冬季不生长
-        return Environment.Instance.getSeasonNum() == 3 ? true : false;
+        return env.getSeasonNum() == 3 ;
     }
 
 
@@ -87,5 +126,6 @@ public abstract class InitialProduce : MonoBehaviour//各个产业的父类脚本
     protected static void MV(float vitality) => PlayerManager.Instance.ModifyVitality(vitality);
     protected static int GSN() => Environment.Instance.getSeasonNum();
     protected static float GL() => Environment.Instance.getLight();
-    
+    protected static void HideOperationUI() => InitialOperation.Instance.HideOperationUI();
+
 }

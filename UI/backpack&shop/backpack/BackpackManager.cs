@@ -1,8 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
 
 
@@ -18,8 +16,9 @@ public class BackpackItems//用于保存背包物品数量的数据结构
         numbers = new List<int>();
         itemID = new List<int>();
     }
-    public BackpackItems(List<int> numbers , List<int> ID)//带参数的构造函数，接受一个整数列表作为参数,用于初始化背包物品数量的数据结构
-    {
+    public BackpackItems(List<int> numbers , List<int> ID)   
+    {//带参数的构造函数，接受一个整数列表作为参数,用于初始化背包物品数量的数据结构
+ 
         this.numbers = numbers;
         this.itemID = ID;
     }
@@ -56,7 +55,8 @@ public class BackpackManager : MonoBehaviour
         {
             if (slot.itemSO == itemSO)
             {
-                if ( amount < 0 && Mathf.Abs(amount) > slot.amount ) return -1;//如果要减少的数量大于当前物品数量,则返回-1,表示操作失败 
+                if (slot.amount == 1 || ( amount < 0 && Mathf.Abs(amount) > slot.amount )) 
+                    return -1;//如果要减少的数量大于当前物品数量,则返回-1,表示操作失败,至少保留一个物品 
                 slot.amount += amount;
                 slot.UpdateUI();
                 MoneyAmounts();
@@ -84,7 +84,7 @@ public class BackpackManager : MonoBehaviour
 
 
 
-    private void AmountUpdate()
+    public void AmountUpdate()
     {
         MoneyAmounts();
     }
