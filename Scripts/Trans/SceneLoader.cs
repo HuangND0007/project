@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -74,6 +72,7 @@ public class SceneLoader : MonoBehaviour
     LoadLevel(levelName, spawnPoint);
     Debug.Log("[SceneLoader] 切换完成");
         currentScene = levelName;
+        Player.Instance.SetMoveTrue();
 }
     public void LoadLevel(string levelName, string spawnPoint)
     {
@@ -134,6 +133,7 @@ public class SceneLoader : MonoBehaviour
             pro.SetActive(false);
         }
         Debug.Log("[SceneLoader] 等待结束，传送完成");
+
     }
 
     private Transform FindPlayer()

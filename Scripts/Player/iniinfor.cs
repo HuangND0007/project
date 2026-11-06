@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class iniinfor : MonoBehaviour
@@ -7,7 +5,7 @@ public class iniinfor : MonoBehaviour
     public GameObject ini;
     public GameObject Guild;
 
-    private void Awake()
+    private void Set()
     {
         if ("³õÊ¼Ãû³Æ".Equals(PlayerManager.Instance.GetName()))
         {
@@ -17,6 +15,10 @@ public class iniinfor : MonoBehaviour
         {
             Guild.SetActive(false);
         }
+    }
+    private void Awake()
+    {
+        Set();   
     }
 
 

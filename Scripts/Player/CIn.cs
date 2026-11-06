@@ -9,6 +9,8 @@ public class CIn : MonoBehaviour
     public TMP_InputField inputField;
     //public TMP_InputField outputField;
     public Button confirmButton;
+    public GameObject Guild;
+    public GameObject Panel;
 
 
     private void Start()
@@ -45,8 +47,10 @@ public class CIn : MonoBehaviour
         Name = inputField.text;
         PlayerManager.Instance.SetName(Name);
         BackpackManager.Instance.NameUpdate();
-        //outputField.text = "输入成功！当前玩家名字为：" + PlayerManager.Instance.GetName();
         DeactiveUI();
+        Player.Instance.SetMoveFalse();
+        Guild.SetActive(false);
+        Panel.SetActive(true);
     }
 
 

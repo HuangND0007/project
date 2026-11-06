@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.UIElements;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 [System.Serializable]
@@ -37,7 +33,7 @@ public class PlayerData
         Z =  z;
     }
     public PlayerData() { 
-        Name = "初始名称";Speed = 5f;Money = 1000f;Vitality = 100f;Mood = 100f;
+        Name = "初始名称";Speed = 15f;Money = 1000f;Vitality = 100f;Mood = 100f;
         Location = "Town";X = 0f; Y = 0f; Z = 0f;
     }
 }
@@ -59,7 +55,7 @@ public class PlayerManager : MonoBehaviour
     [Tooltip("心情")]
     public float Mood;
     [Tooltip("状态等带来的效率加成")]
-    private float effience = 0;
+    private float effience = 1;
     private float err;
     public string Location;
     public Vector3 Position;
@@ -71,6 +67,7 @@ public class PlayerManager : MonoBehaviour
     }
 
     //工作效率的set和return
+    //废弃
     private void SetEffience()///拟合函数之后再确定
     {
         effience = 150 / (Mood + Vitality);
@@ -81,6 +78,7 @@ public class PlayerManager : MonoBehaviour
     }
 
     //出错概率的set和return
+    //废弃
     private void SetErr()///拟合函数之后再确定
     {
         err = 150 / (Mood + Vitality);

@@ -12,16 +12,21 @@ public class BackpackSlots : MonoBehaviour
 
     public void UpdateUI()
     {
-        
+        // 物品数量为零时，直接销毁整个格子
+        if (amount <= 0)
+        {
+            // 先从背包管理器的列表中移除，避免留下无效引用
+            if (BackpackManager.Instance != null)
+            {
+                BackpackManager.Instance.RemoveSlot(this);
+            }
+
+            Destroy(gameObject);
+            return;
+        }
+
         if (itemSO != null)
         {
-            if(amount == 0) 
-            {
-                itemSO = null;
-                itemImage.gameObject.SetActive(false);
-                Amount.text = "";
-                return;
-            }
             itemImage.sprite = itemSO.Icon;
             itemImage.gameObject.SetActive(true);
             Amount.text = amount.ToString();
@@ -29,7 +34,7 @@ public class BackpackSlots : MonoBehaviour
         else
         {
             itemImage.gameObject.SetActive(false);
-                Amount.text = "";
+            Amount.text = "";
         }
     }
 }
