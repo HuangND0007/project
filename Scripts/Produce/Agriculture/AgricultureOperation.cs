@@ -38,6 +38,7 @@ public class AgricultureOperation : InitialOperation
         if (PlayerInRange && Input.GetKeyDown(OperationKey))
         {
             NoMove();
+            Exit.Instance.TrueEscChoke();
             if (AgricultureProduce.Instance.GetterArea() == 0) { 
                 IniCan.SetActive(true);
             }

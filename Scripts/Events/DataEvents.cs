@@ -14,11 +14,12 @@ public struct eventsdata
     public int destory_count ;//林地以外被破坏的数量
 
     public bool IsWent;
+    public float Income;//记录当前的收入,用于后续剧情的触发
 
-
-    public static eventsdata Default => new eventsdata (0, 0, 0, 0, 0 ,false, 0, false);
-
-    public eventsdata(int rural, int foretry, int herd , int fish, int count, bool isdestory_foretry, int destory_count , bool isWent)
+    public eventsdata(
+        int rural = 0, int foretry = 0, int herd = 0, int fish = 0,
+        int count = 0, bool isdestory_foretry = false, int destory_count = 0, bool isWent = false, 
+        float income = 0f)
     {
         Rural = rural;
         Foretry = foretry;
@@ -28,6 +29,7 @@ public struct eventsdata
         this.destory_count = destory_count;
         this.Count = count;
         IsWent = isWent;
+        Income = income;
     }
 
 }
@@ -36,10 +38,11 @@ public struct eventsdata
 public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
 {
     public static DataEvents Instance { get; private set; }
+    private static void ToEnd(int choice) => FinalControl.Instance.SetFinal(choice);
 
     private eventsdata data = new eventsdata();
-    private bool isdestory_foretry = false;//林地是否被破坏
-    private int destory_count = 0;//林地以外被破坏的数量
+    public bool isdestory_foretry = false;//林地是否被破坏
+    public int destory_count = 0;//林地以外被破坏的数量
 
 
     public bool isIsWent()
@@ -95,7 +98,10 @@ public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
         }
     }
 
-
+    public void Income(float income)
+    {
+        data.Income += income;
+    }
 
     /// 破坏状态的记录,用于后续剧情的触发
     public void SetDestoryForetry()
@@ -103,7 +109,7 @@ public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
         isdestory_foretry = true;
     }
 
-    public void SetDestoryCount()
+    public void IncreaceDestoryCount()//破坏不可逆,仅有加法方法
     {
         destory_count++;
     }
@@ -117,19 +123,80 @@ public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
         else Destroy(gameObject);
     }
 
+    public bool DestorySettlement() 
+    {
+        if(isdestory_foretry)
+        {
+            //林地结算
+            ToEnd(1);
+            return true;
+        }
+        if(destory_count >= 2)
+        {
+            //林地以外结算
+            ToEnd(2);
+            return true;
+        }
+        return false;
+    }
+    private void Update()
+    {
+        //DestorySettlement();
+    }
 
+    //结算最终的剧情走向,根据选择节点的数量和收入来判断,游戏结束被调用
+    public void FinalSettlement()
+    {
+        if(DestorySettlement())
+        {
+            return;
+        }
 
-
+        if (data.Count == 0) 
+        {
+            //1类结局
+            ToEnd(3);
+            return;
+        }
+        else if(data.Count <= 3 )
+        {
+             if(data.Income >= 20000)
+             {
+                //2类结局
+                ToEnd(4);
+             }
+             else 
+            {
+                ToEnd(5);
+            }
+             return;
+        }
+        else if(data.Count == 4)
+        {
+            if(data.Income >= 20000)
+             {
+                //4类结局
+                ToEnd(6);
+             }
+             else 
+            {
+                ToEnd(5);
+            }
+             return;
+        }
+    }
 
     public void DataIni()
     {
-        data = eventsdata.Default;
+        data = new eventsdata();
         isdestory_foretry = false;
         destory_count = 0;
     }
     public eventsdata DataSaving()
     {
-        return new eventsdata(data.Rural, data.Foretry, data.Herd, data.Fish, data.Count, isdestory_foretry, destory_count , data.IsWent);
+        return new eventsdata(
+            data.Rural, data.Foretry, data.Herd, data.Fish, data.Count,
+            isdestory_foretry, destory_count , data.IsWent, data.Income);
     }
     public void DataLoading(eventsdata d)
     {

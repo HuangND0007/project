@@ -23,7 +23,7 @@ public class EnvironmentData
         this.time = time;
     }
     public EnvironmentData() { 
-    currentSeason = 0 ; seasonNum = 1; year = 0; day = 1; time = 8.00f;
+    currentSeason = 0 ; seasonNum = 3; year = 0; day = 1; time = 8.00f;
     }
 }
 public class Environment : MonoBehaviour
@@ -34,8 +34,8 @@ public class Environment : MonoBehaviour
     private  static int[] Season = { 0, 1, 0 , -1};//春,夏,秋,冬
     private static string[] SeasonName = {  "春", "夏", "秋" ,"冬"};
     public int currentSeaon;
-    private int seasoNum = 3;
-    private int Year;
+    public int seasoNum = 3;
+    public int Year;
     public int Day;
     public float Time ;
     private float hour;
@@ -61,17 +61,19 @@ public class Environment : MonoBehaviour
         seasoNum++;
         if (seasoNum > 3) Year++;
         seasoNum %= 4;
-    }
-
-    //季节轮替
-    public void seasonTransform()
-    {
-        seasoNum++;
-        if (seasoNum > 3) YearSet();
-        seasoNum %= 4;
         currentSeaon = Season.ElementAt(seasoNum);
+        ProduceSaving.Instance.Grow();
+        DataEvents.Instance.DestorySettlement();
+
+        if(Year >= 10)
+        {
+            SleepTipsUI.Instance.TrueClog();
+            DataEvents.Instance.FinalSettlement();
+            TimeUImanage.Instance.HideUI();
+        }
     }
 
+    
     //传递分钟的时间变化
     public void SetTime (int min)
     {
@@ -88,6 +90,14 @@ public class Environment : MonoBehaviour
         minute += 60 * (h % 1);
         TimeTranslate(); MerageTime();
         prinEn();
+    }
+    //跳过夜晚
+    public void SetTime() { 
+        Time = 8.00f;
+        Day += 1;
+        hour = 8;
+        minute = 0;
+
     }
     //更新浮点时间变量的方法
     private void MerageTime()
@@ -113,10 +123,10 @@ public class Environment : MonoBehaviour
         {
             hour %= 24;
             Day++;
-            if(Day > 15)
+            if(Day > 10)
             {
                 Day = 1;
-                seasonTransform();
+                SkipSeason();
                 if (currentSeaon == -1)
                     Year++;
             }
@@ -129,7 +139,8 @@ public class Environment : MonoBehaviour
         if (Time > 18 + currentSeaon || Time < 6 - currentSeaon)//夜间仅有星光
             _light = starLight;
         else                                                    //白天光照随时间变化
-            _light = (9.9f + 0.2f * currentSeaon ) *Mathf.Sin(setLightseason()) * Mathf.Sin(setLightseason());
+            _light = 0.5f + Mathf.Pow(12 + currentSeaon, 2f)/5;
+                //(9.9f + 0.2f * currentSeaon ) *Mathf.Sin(setLightseason()) * Mathf.Sin(setLightseason());
     }
     private float setLightseason()
     {

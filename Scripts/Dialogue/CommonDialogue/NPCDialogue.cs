@@ -1,0 +1,233 @@
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class _NPCDialogue : MonoBehaviour
+{
+    public static _NPCDialogue Instance { get; private set; }
+    [Header("主对话UI")]
+    [SerializeField] private DialogueData dialogueData;
+    [SerializeField] private GameObject dialoguePanel;
+    [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text contentText;
+    [SerializeField] private Button openOptionsButton;  // "查看选项"按钮
+    [SerializeField] private Button openShopButton;  // "查看商店"按钮
+    [SerializeField] private Button Guild;  //向导的按钮
+
+
+    [Header("选项弹窗")]
+    [SerializeField] private GameObject optionsWindow;
+    [SerializeField] private Transform optionsContainer;
+    [SerializeField] private GameObject optionButtonPrefab;
+    [SerializeField] private Button closeOptionsButton;
+    //[SerializeField] private TMP_Text Titletext;
+    [SerializeField] private TMP_Text resultText;  // 弹窗内显示选择结果
+
+    [Header("商店弹窗")]
+    [SerializeField] private CanvasGroup shopWindow;
+
+    private int currentLine = 0;
+    private bool isPlayerInRange = false;
+    private bool isDialogueActive = false;
+    private bool isOptionsWindowActive = false;
+
+    public bool IfDialogueActive()
+    {
+        return isDialogueActive;
+    }    
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+    }
+    void Start()
+    {
+        openOptionsButton.onClick.AddListener(() =>
+        {
+            OpenOptionsWindow();
+            Debug.Log("打开选项界面");
+
+        });
+        openShopButton.onClick.AddListener(() => 
+        {
+            OpenShopWindow();
+            Debug.Log("打开商店界面");
+        });
+        Guild.onClick.AddListener(() =>
+        {
+            GameObject btn = Instantiate(optionButtonPrefab, optionsContainer);
+            closeDialogue(true);
+            Debug.Log("向导初始化内容");
+        });
+        closeOptionsButton.onClick.AddListener(CloseOptionsWindow);
+    }
+
+    void Update()
+    {
+        if (isPlayerInRange && Input.GetKeyDown(KeyCode.F))
+        {
+            Player.Instance.SetMoveFalse();  // 禁止玩家移动
+            Exit.Instance.TrueEscChoke();  // 禁止ESC键功能
+            Debug.Log("按下F键，触发对话逻辑");
+            if (!isDialogueActive && !isOptionsWindowActive) StartDialogue();
+            else NextLine();
+        }
+    }
+
+    public void ForceStartDialogue()
+    {
+        if (!isDialogueActive) StartDialogue();
+    }
+    void StartDialogue()
+    {
+        isDialogueActive = true;
+        currentLine = 0;
+        dialoguePanel.SetActive(true);
+        ShowLine();
+    }
+
+    void ShowLine()
+    {
+        if (currentLine >= dialogueData.lines.Length)
+        {
+            EndDialogue();
+            return;
+        }
+
+        var line = dialogueData.lines[currentLine];
+        nameText.text = line.speakerName;
+        contentText.text = line.content;
+
+        // 控制"查看选项"按钮显示
+        openOptionsButton.gameObject.SetActive(line.hasOptions);
+        openShopButton.gameObject.SetActive(line.shop);
+        Guild.gameObject.SetActive(line.Guild);
+    }
+
+    // ========== 选项弹窗逻辑 ==========
+
+    void OpenOptionsWindow()
+    {  
+        //Titletext.text = dialogueData.lines[currentLine].speakerName;
+        //print("发言者名称:"+dialogueData.lines[currentLine].speakerName);
+
+        if (openOptionsButton != null) dialoguePanel.SetActive(false);  // 隐藏主界面
+        isOptionsWindowActive = true;
+        isDialogueActive = false; // 进入选项界面时不再视为对话进行中，防止误触发下一行对话
+        var currentOptions = dialogueData.lines[currentLine].options;
+        if (currentOptions == null || currentOptions.Length == 0) return;
+
+        // 清空旧选项
+        foreach (Transform child in optionsContainer)
+            if (child != null) Destroy(child.gameObject);
+
+        resultText.text = "您有什么疑问?";  // 清空上次结果
+
+        // 生成选项按钮
+        foreach (var option in currentOptions)
+        {
+            GameObject btn = Instantiate(optionButtonPrefab, optionsContainer);
+            if (option.optionText != null)
+                btn.GetComponentInChildren<TMP_Text>().text = option.optionText;
+
+            // 点击后直接显示结果，不跳转对话
+            var opt = option;  // 闭包捕获
+            btn.GetComponent<Button>().onClick.AddListener(() => OnOptionSelected(opt));
+        }
+
+        optionsWindow.SetActive(true);
+        //optionsContainer.GetComponentInParent<GameObject>().SetActive(false);
+    }
+
+    // ========== 商店弹窗逻辑 ==========
+    void OpenShopWindow()
+    {
+        if (openShopButton != null) openShopButton.gameObject.SetActive(false);  // 隐藏商店按钮
+        //var currentOptions = dialogueData.lines[currentLine].options;
+        //if (currentOptions == null || currentOptions.Length == 0) return;
+
+        // 清空旧选项
+        foreach (Transform child in optionsContainer)
+            if (child != null) Destroy(child.gameObject);
+
+        resultText.text = "";  // 清空上次结果
+
+        closeDialogue(false);
+        // 生成商店界面
+
+        BackPackUI.Instance.BackPackOpenandClose();
+        shopWindow.alpha = 1;
+        shopWindow.interactable = true;
+        shopWindow.blocksRaycasts = true;
+    }
+
+    void OnOptionSelected(DialogueData.DialogueOption option)
+    {
+        resultText.text = option.resultText;
+
+        // 清空选项，只保留结果和关闭按钮
+        foreach (Transform child in optionsContainer)
+            if (child != null) Destroy(child.gameObject);
+        optionsContainer.gameObject.SetActive(false);
+    }
+
+    public void CloseOptionsWindow()
+    {
+        optionsWindow.SetActive(false);
+        // 不需要回到任何对话状态，直接关闭即可
+    }
+
+    void NextLine()
+    {
+        currentLine++;
+        ShowLine();
+    }
+
+    public void EndDialogue()
+    {
+        closeDialogue(true);
+        CloseOptionsWindow();  // 确保弹窗也关闭
+
+        Player.Instance.SetMoveTrue();  // 恢复玩家移动
+        Exit.Instance.FalseEscChoke();  // 恢复ESC键功能
+        optionsContainer.gameObject.SetActive(true);
+    }
+
+    void closeDialogue(bool active)
+    {
+        if (active)
+        {
+            isOptionsWindowActive = false;  //关闭选项窗口时重置状态
+            isDialogueActive = false; //只有在正常结束对话时才设置为false，强制关闭对话界面不改变状态
+        }
+        if (dialogueData != null && dialoguePanel != null)           //防御性检查
+        {
+            dialoguePanel.SetActive(false); // 隐藏对话界面
+        }
+        if (BackPackUI.Instance.IsOpen())//如果背包界面打开了，关闭按钮一并关闭背包界面
+        {
+            BackPackUI.Instance.BackPackOpenandClose();
+        }
+        if (shopWindow != null) {shopWindow.alpha = 0;  // 隐藏商店界面
+            shopWindow.interactable = false;
+            shopWindow.blocksRaycasts = false;
+        }
+    }
+    void OnEnable()
+    {
+        EndDialogue();  // 确保每次启用时对话结束
+        isOptionsWindowActive = false;  // 确保选项窗口状态重置
+    }
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player")) isPlayerInRange = true;
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isPlayerInRange = false;
+            if (isDialogueActive) EndDialogue();
+        }
+    }
+}

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class BGMManager : MonoBehaviour
 {
-    public static BGMManager Instance;
+    public static BGMManager Instance { get; private set; }
 
     private AudioSource audioSource;
 
@@ -29,9 +29,10 @@ public class BGMManager : MonoBehaviour
     // 播放（传入 AudioClip）
     public void PlayBGM(AudioClip clip)
     {
-        if (audioSource.clip == clip) return; // 同一首不重复播
+        StopBGM(); // 先停止当前播放
         audioSource.clip = clip;
         audioSource.Play();
+        print($"[BGMManager] PlayBGM: {clip.name}");
     }
 
     // 停止

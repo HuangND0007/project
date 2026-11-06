@@ -6,7 +6,7 @@ public class HideInDerivedAttribute : PropertyAttribute { }
 
 public class InitialProduce : MonoBehaviour//各个产业的父类脚本
 {
-
+    public static InitialProduce Instance { get; private set; }
     private float Input;//产业的投入值,各个子类会有一个新的对应值,不被继承
 
 
@@ -15,8 +15,10 @@ public class InitialProduce : MonoBehaviour//各个产业的父类脚本
     protected float Nutrition = 20f;//区域营养度,初始值20,影响以上两个数值
     protected bool Ripe;//是否成熟,成熟后可以收
     protected float Output;//产量
+    protected float Cooperation = 1f;//合作商带来的增产,接受合作后变为1.5,并且会增长;拒绝合作变为1.1不再变化
 
     public ItemSO ProductiveItem;//产出的物品,各个子类会自己赋值
+    public GameObject IniInformationPanel;
 
     [HideInDerived]
     public Button Button1;
@@ -60,6 +62,7 @@ public class InitialProduce : MonoBehaviour//各个产业的父类脚本
 
     public bool WorkJudge()
     {
+        Debug.Log("光照被判定");
         if (GL() <= 1.0f)
         {
             print("光照不足，无法工作");
@@ -85,7 +88,26 @@ public class InitialProduce : MonoBehaviour//各个产业的父类脚本
             StartCoroutine(Wait(Unripe));
         }
     }
+    public void ToInfomationPanel() { 
+        if (IniInformationPanel != null)
+        {
+           IniInformationPanel.SetActive(true);
+        }
+    }
 
+    public void ProductCooperationSet(int choice , string type)
+    {
+        switch (choice)
+        {
+            case 1: Cooperation = 1.1f;Refuse(type); break;
+            case 2: Cooperation = 1.5f;Receive(type); break;
+        }
+    }
+    public void ActiveTipsUI(GameObject obj) //外部调用激活提示UI,并在2秒后关闭
+    {
+        TipsUI.SetActive(true);
+        StartCoroutine(Wait(obj));
+    }
     private IEnumerator Wait(GameObject obj)
     {
 
@@ -119,6 +141,18 @@ public class InitialProduce : MonoBehaviour//各个产业的父类脚本
         return env.getSeasonNum() == 3 ;
     }
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
 
 
     ///一系列简写调用,可能之后会看不懂(
@@ -126,6 +160,18 @@ public class InitialProduce : MonoBehaviour//各个产业的父类脚本
     protected static void MV(float vitality) => PlayerManager.Instance.ModifyVitality(vitality);
     protected static int GSN() => Environment.Instance.getSeasonNum();
     protected static float GL() => Environment.Instance.getLight();
-    protected static void HideOperationUI() => InitialOperation.Instance.HideOperationUI();
+    protected static void Income(float income) => DataEvents.Instance.Income(income);
+    public static void Refuse(string type) => DataEvents.Instance.Refuse(type);
+    public static void Receive(string type) => DataEvents.Instance.Receive(type);
+
+    protected static void HideOperationUI()
+    {
+       
+        InitialOperation.Instance.HideOperationUI();
+    }
+    public void HideIni()
+    {
+        IniInformationPanel.SetActive(false);
+    }
 
 }

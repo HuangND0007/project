@@ -1,4 +1,6 @@
 using UnityEngine;
+using Unity.UI;
+using UnityEngine.UI;
 
 public class InitialOperation : MonoBehaviour
 {
@@ -14,11 +16,14 @@ public class InitialOperation : MonoBehaviour
 
     public void HideOperationUI()
     {
+        Debug.Log("ESC±»µã»÷");
         if (OperationUI != null && OperationUI.activeSelf)
         {
             OperationUI.SetActive(false);
             ToMove();
         }
+        InitialProduce.Instance.HideIni();
+        Exit.Instance.FalseEscChoke();
     }
 
     protected void OnTriggerEnter2D(Collider2D other)
@@ -48,9 +53,9 @@ public class InitialOperation : MonoBehaviour
         {
             Instance = this;
         }
-        else
-        {
-            Destroy(gameObject);
-        }
+    }
+    private void Update()
+    {
+        if (Input.GetKey(ESCKey))HideOperationUI();
     }
 }
