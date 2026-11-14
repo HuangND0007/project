@@ -2,20 +2,32 @@ using UnityEngine;
 
 public class PlayerController_Trans : MonoBehaviour
 {
-    public static PlayerController_Trans Instance { get; private set; }
+    public static PlayerController_Trans _instance;
+    public static PlayerController_Trans Instance
+    {
+        get
+        {
+            if (_instance == null)
+                _instance = FindFirstObjectByType<PlayerController_Trans>(); // 2022.3 可用
+            return _instance;
+        }
+    }
+
+    private void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);   // MainScene 重新加载带进来的副本，销毁
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     [SerializeField] private CharacterController charController;
     private bool isTeleporting;
 
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else Destroy(gameObject);
-    }
+   
 
     public void SetPositionAndRotation(Vector3 pos, Quaternion rot)
     {

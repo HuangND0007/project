@@ -1,0 +1,248 @@
+using System.Linq;
+using UnityEngine;
+
+[System.Serializable]
+public class EnvironmentData
+{
+    public int currentSeason;
+    public int seasonNum;
+    public int year;
+    public int day;
+    public float time;
+
+    public EnvironmentData(int currentSeason, int seasonNum, int year, int day, float time)
+    {
+        this.currentSeason = currentSeason;
+        this.seasonNum = seasonNum;
+        this.year = year;
+        this.day = day;
+        this.time = time;
+    }
+    public EnvironmentData() { 
+    currentSeason = 0 ; seasonNum = 3; year = 0; day = 1; time = 8.00f;
+    }
+}
+public class EnvironmentManageer : MonoBehaviour
+{
+
+    private static EnvironmentManageer _instance;
+    public static EnvironmentManageer Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<EnvironmentManageer>(FindObjectsInactive.Include);
+                if (_instance == null)
+                {
+                    var go = new GameObject("[EnvironmentManageer]");
+                    _instance = go.AddComponent<EnvironmentManageer>();
+                    Debug.LogWarning("[Env] 场景中未找到，已自动创建");
+                }
+                DontDestroyOnLoad(_instance.gameObject);
+            }
+            return _instance;
+        }
+    }
+
+    private void Awake()
+    {
+        Debug.Log($"[Env] Awake 执行，所在场景: {gameObject.scene.name}");
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);   // MainScene 重新加载带进来的副本，销毁
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+    private  static int[] Season = { 0, 1, 0 , -1};//春,夏,秋,冬
+    private static string[] SeasonName = {  "春", "夏", "秋" ,"冬"};
+    public int currentSeaon;
+    public int seasoNum = 3;
+    public int Year;
+    public int Day;
+    public float Time ;
+    private float hour;
+    private float minute;
+    private float _light;
+    private static float  starLight = 1f;
+
+
+    public void YearSet()
+    {
+        Year++;
+        Day = 1;
+        Time = 8.00f;
+        hour = 8;
+        seasoNum = 0;
+    }
+   public void SkipSeason()
+    {
+        Day = 1;
+        Time = 8.00f;
+        hour = 8;
+        minute = 0;
+        seasoNum++;
+        if (seasoNum > 3) Year++;
+        seasoNum %= 4;
+        currentSeaon = Season.ElementAt(seasoNum);
+        ProduceSaving.Instance.Grow();
+        DataEvents.Instance.DestorySettlement();
+
+        if(Year >= 10)
+        {
+            SleepTipsUI.Instance.TrueClog();
+            DataEvents.Instance.FinalSettlement();
+            TimeUImanage.Instance.HideUI();
+        }
+    }
+
+    
+    //传递分钟的时间变化
+    public void SetTime (int min)
+    {
+        SeparateTime();
+        minute += (float)min;
+        TimeTranslate(); MerageTime();
+        prinEn();
+    }
+    //传递小时的时间变化
+    public void SetTime(float h)
+    {
+        SeparateTime();
+        hour += (int)(h - h % 1);
+        minute += 60 * (h % 1);
+        TimeTranslate(); MerageTime();
+        prinEn();
+    }
+    //跳过夜晚
+    public void SetTime() { 
+        Time = 8.00f;
+        Day += 1;
+        hour = 8;
+        minute = 0;
+
+    }
+    //更新浮点时间变量的方法
+    private void MerageTime()
+    {
+        Time = hour + minute / 60.0f;
+    }
+    private void SeparateTime()
+    {
+        hour = (int)Time;
+        minute = 60 * (Time % 1);
+    }
+
+
+    //分钟与小时的时间进制更新
+    private void TimeTranslate()
+    {
+        if (minute >= 60)
+        {
+            minute %= 60;
+            hour++;
+        }
+        if(hour >= 24)
+        {
+            hour %= 24;
+            Day++;
+            if(Day > 10)
+            {
+                Day = 1;
+                SkipSeason();
+                if (currentSeaon == -1)
+                    Year++;
+            }
+        }
+    }
+
+    //一天内光照度随时间的变化
+    private void setLight()
+    {
+        if (Time > 18 + currentSeaon || Time < 6 - currentSeaon)//夜间仅有星光
+            _light = starLight;
+        else                                                    //白天光照随时间变化
+            _light = 0.5f + Mathf.Pow(12 + currentSeaon, 2f)/5;
+                //(9.9f + 0.2f * currentSeaon ) *Mathf.Sin(setLightseason()) * Mathf.Sin(setLightseason());
+    }
+    private float setLightseason()
+    {
+        return Mathf.Round(  Mathf.PI * (Time - 6 + currentSeaon) / (12 + currentSeaon) *100f / 100f);
+    }
+
+
+
+
+
+
+    /// <summary>
+    /// get方法
+    /// </summary>
+    /// <returns></returns>
+    //光照的接口
+    public float getLight()
+    {
+        setLight();//测试用
+        return _light;
+    }
+
+    public int getYear()//返回年份
+    {
+        return Year;
+    }
+    public int getSeasonNum()//返回季节编号
+    {
+        return seasoNum;
+    }
+    public string getSeason()//返回季节
+    {
+        return SeasonName[seasoNum];
+    }
+    public int getDay()//返回日期
+    {
+        return Day;
+    }
+    public float getTime()//返回时间
+    {
+        return Time;
+    }
+    
+    private void prinEn()//测试用打印时间
+    {
+        int m = (int)(60 * (Time % 1));
+        if (m >= 10)
+        print( (Time - Time %1) + ":" + m + ";time:" + Time);
+        else
+        print((Time - Time % 1) + ":0" + m + ";time:" + Time);
+        print("light:" + getLight());
+    }
+
+
+
+
+
+
+    /// <summary>
+    /// 数据层的保存初始化方法，调用DataLoading()方法将数据初始化为默认值
+    /// </summary>
+    public void DataIni()
+    {
+        DataLoading(new EnvironmentData());
+    }
+    public EnvironmentData DataSaving()
+    {
+        return new EnvironmentData(currentSeaon, seasoNum, Year, Day, Time);
+    }
+    public void DataLoading(EnvironmentData data)
+    {
+        currentSeaon = data.currentSeason;
+        seasoNum = data.seasonNum;
+        Year = data.year;
+        Day = data.day;
+        Time = data.time;
+    }
+
+    
+}

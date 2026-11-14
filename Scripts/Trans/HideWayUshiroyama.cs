@@ -6,7 +6,7 @@ public class HideWayUshiroyama : MonoBehaviour
     private void Awake()
     {
         print("Awake HideWayUshiroyama");
-        if (Environment.Instance.getYear() >= 1 && Environment.Instance.getSeasonNum() >= 2 )
+        if (EnvironmentManageer.Instance.getYear() >= 1 && EnvironmentManageer.Instance.getSeasonNum() >= 2 )
         {
             Hided.SetActive(true);
         }

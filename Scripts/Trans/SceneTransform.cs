@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 
@@ -15,11 +16,15 @@ public class SceneTransform : MonoBehaviour
         StartCoroutine(SceneLoader.Instance.SwitchLevelAsync(levelName, spawnPoint));
         Debug.Log("加载完成");
         SceneLoader.Instance.reIsTrans();
+        Player.Instance.SetMoveTrue();
     }
     
     private void TransSet(string scene, int time ,string point = null)//统一化设置场景和时间的方法，方便调用
     {
-        Environment.Instance.SetTime(time);
+        if (EnvironmentManageer.Instance != null)
+            EnvironmentManageer.Instance.SetTime(time);
+        else
+            Debug.LogError("[SceneTransform] Environment 未初始化！");
         Trans(scene,point);
         switch(scene)
         {
@@ -41,7 +46,7 @@ public class SceneTransform : MonoBehaviour
     }
     private void TransSet(string scene , float time, string point = null)//统一化设置场景和时间的方法，方便调用
     {
-        Environment.Instance.SetTime(time);
+        EnvironmentManageer.Instance.SetTime(time);
         Trans(scene,point);
         switch(scene)
         {
@@ -61,8 +66,6 @@ public class SceneTransform : MonoBehaviour
         //ModifyPosition(scene, x, y, z ,preScene);
         UpdateUI();
     }
-    private void ModifyPosition(string scene,float x , float y ,float z , string preScene) 
-        => Player.Instance.ModifyPosition(scene , x, y, z , preScene);
 
 
     private void Start()
@@ -98,7 +101,7 @@ public class SceneTransform : MonoBehaviour
         TransSet("Town", 30 , "SpawnPoint_Home");
     }
 
-    public void Load()//后续修改完善
+    public void Load()//读档使用
     {
         //DataManager.Instance.DataLoading();
         string location = PlayerManager.Instance.GetLocation();
@@ -107,22 +110,14 @@ public class SceneTransform : MonoBehaviour
         TimeUImanage.Instance.OnEnterGameScene();
         Debug.Log("进入游戏");
     }
-    public void NewGame()
+    public void NewGame()//新的游戏使用
     {
         DataManager.Instance.AllInitial();
         TransSet("Town", 0, "enter");
         TimeUImanage.Instance.OnEnterGameScene();
         Debug.Log("进入游戏");
     }
-
-    /// 废弃
-    public void Loading()//进入游戏场景时的加载方法，主要用于进入场景时
-    {
-        string location = PlayerManager.Instance.GetLocation();
-        Vector3 position = new Vector3(PlayerManager.Instance.Position.x, PlayerManager.Instance.Position.y, PlayerManager.Instance.Position.z);
-
-        TimeUImanage.Instance.OnEnterGameScene();
-        ModifyPosition(location, position.x, position.y, position.z, "MainScene");
-    }
+     
+   
 
 }

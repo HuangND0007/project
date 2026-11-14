@@ -37,7 +37,27 @@ public struct eventsdata
 
 public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
 {
-    public static DataEvents Instance { get; private set; }
+    public static DataEvents _instance;
+    public static DataEvents Instance
+    {
+        get
+        {
+            if (_instance == null)
+                _instance = FindFirstObjectByType<DataEvents>(); // 2022.3 可用
+            return _instance;
+        }
+    }
+
+    private void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);   // MainScene 重新加载带进来的副本，销毁
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
     private static void ToEnd(int choice) => FinalControl.Instance.SetFinal(choice);
 
     private eventsdata data = new eventsdata();
@@ -113,15 +133,7 @@ public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
     {
         destory_count++;
     }
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else Destroy(gameObject);
-    }
+   
 
     public bool DestorySettlement() 
     {
@@ -139,10 +151,7 @@ public class DataEvents : MonoBehaviour//记录选择节点的脚本，方便后续剧情的触发
         }
         return false;
     }
-    private void Update()
-    {
-        //DestorySettlement();
-    }
+    
 
     //结算最终的剧情走向,根据选择节点的数量和收入来判断,游戏结束被调用
     public void FinalSettlement()

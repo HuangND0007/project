@@ -1,12 +1,37 @@
 using System;
-using UnityEditor.Tilemaps;
+using Unity.VisualScripting;
+
+//using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 public class Player : MonoBehaviour
 {
-    public static Player Instance { set; get; }
+    public static Player _instance;
+    public static Player Instance
+    {
+        get
+        {
+            if (_instance == null)
+                _instance = FindFirstObjectByType<Player>(); // 2022.3 可用
+            return _instance;
+        }
+    }
+    private void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);   // MainScene 重新加载带进来的副本，销毁
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+        RightObject.SetActive(true);
+        LeftObject.SetActive(false);
+    }
+
+
     public GameObject PlayerPerson;
     public int Face = 1;
     public Rigidbody2D rb;
@@ -16,7 +41,7 @@ public class Player : MonoBehaviour
     public Animator Left;
     public Animator Right;
 
-    private Vector3 pendingPosition;
+    //private Vector3 pendingPosition;
 
     public void SetMoveTrue()
     {
@@ -27,28 +52,17 @@ public class Player : MonoBehaviour
         Move = false;
     }
 
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += OnSceneLoaded;
-            RightObject.SetActive(true);
-            LeftObject.SetActive(false);   
-        }
-        else Destroy(gameObject);
-    }
+
 
     private void Update()
     {
         // Update 里只处理非移动逻辑（如场景判断等）
-        if ("MainScene".Equals(UnitySceneManager.GetActiveScene().name) || !Move ) return;
+        if ("MainScene".Equals(UnitySceneManager.GetActiveScene().name) || !Move) return;
     }
 
     void FixedUpdate()
     {
-        if ("MainScene".Equals(UnitySceneManager.GetActiveScene().name)|| !Move ) return;
+        if ("MainScene".Equals(UnitySceneManager.GetActiveScene().name) || !Move) return;
 
         // 读取输入
         float movex = Input.GetAxis("Horizontal");
@@ -65,12 +79,12 @@ public class Player : MonoBehaviour
             LeftObject.SetActive(false);
             RightObject.SetActive(true);
         }
-        if(LeftObject.activeSelf)
+        if (LeftObject.activeSelf)
         {
-            Left.SetFloat("horizontal",Mathf.Abs(movex));
+            Left.SetFloat("horizontal", Mathf.Abs(movex));
             Left.SetFloat("vertical", Mathf.Abs(movey));
         }
-        else if(RightObject.activeSelf)
+        else if (RightObject.activeSelf)
         {
             Right.SetFloat("horizontal", Mathf.Abs(movex));
             Right.SetFloat("vertical", Mathf.Abs(movey));
@@ -78,7 +92,8 @@ public class Player : MonoBehaviour
         Vector2 movement = new Vector2(movex, movey);
 
         // 如果没有输入，直接返回
-        if (movement.sqrMagnitude < 0.001f) {
+        if (movement.sqrMagnitude < 0.001f)
+        {
 
             return;
         }
@@ -110,22 +125,17 @@ public class Player : MonoBehaviour
         return transform.position;
     }
 
-    public void ModifyPosition(string sceneName, float x, float y, float z, string preScene)
-    {
-        Vector3 targetPosition = new Vector3(x, y, z);
-        pendingPosition = targetPosition;
-        SceneManager.LoadScene(sceneName);
-        Debug.Log("位置" + transform.position);
-    }
 
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        transform.position = pendingPosition;
-        Debug.Log($"已传送到: {pendingPosition}");
-    }
 
-    void OnDestroy()
+    public void Teleport(Vector3 pos)
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        transform.position = pos;
+        if (rb != null)
+        {
+            rb.position = pos;
+            rb.velocity = Vector2.zero;
+        }
+
+
     }
 }

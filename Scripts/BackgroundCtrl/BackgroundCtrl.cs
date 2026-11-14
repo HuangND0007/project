@@ -7,8 +7,11 @@ public class BackgroundCtrl : MonoBehaviour
     [SerializeField]
     private GameObject Night;
 
-    private static Environment env = Environment.Instance;
-
+    private static EnvironmentManageer env;
+    private void Awake()
+    {
+        env = EnvironmentManageer.Instance;
+    }
     private bool isDay()
     {
         return env.getTime() < 18f && env.getTime() > 6f;

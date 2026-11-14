@@ -2,29 +2,33 @@ using UnityEngine;
 
 public class BGMManager : MonoBehaviour
 {
-    public static BGMManager Instance { get; private set; }
-
     private AudioSource audioSource;
-
-    void Awake()
+    public static BGMManager _instance;
+    public static BGMManager Instance
     {
-        // 单例：跨场景不销毁
-        if (Instance == null)
+        get
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (_instance == null)
+                _instance = FindFirstObjectByType<BGMManager>(); // 2022.3 可用
+            return _instance;
         }
-        else
+    }
+    private void Awake()
+    {
+        if (_instance != null && _instance != this)
         {
-            Destroy(gameObject);
+            Destroy(gameObject);   // MainScene 重新加载带进来的副本，销毁
             return;
         }
-
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.loop = true;          // 循环播放
         audioSource.playOnAwake = false;
         audioSource.volume = 0.5f;
     }
+   
+    
 
     // 播放（传入 AudioClip）
     public void PlayBGM(AudioClip clip)

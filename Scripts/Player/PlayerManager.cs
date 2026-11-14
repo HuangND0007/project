@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
@@ -41,8 +42,27 @@ public class PlayerData
 
 public class PlayerManager : MonoBehaviour
 {
-    public static PlayerManager Instance { get; private set; }
+    public static PlayerManager  _instance;
+    public static PlayerManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+                _instance = FindFirstObjectByType<PlayerManager>(); // 2022.3 可用
+            return _instance;
+        }
+    }
 
+    private void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);   // MainScene 重新加载带进来的副本，销毁
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
     [Header("玩家基础")]
     [Tooltip("玩家名字")]
     private string Name;
@@ -155,15 +175,6 @@ public class PlayerManager : MonoBehaviour
         return Location.Equals( "MainScene") ?  "Town" : Location;
     }
 
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else Destroy(gameObject);
-    }
-
+   
 
 }
